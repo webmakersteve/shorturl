@@ -5,5 +5,11 @@ function randChar() {
 }
 
 function randStr(n) {
-  // returns a random string with 'n' letters in it.
+  var result = "";
+  for (var i = 0; i < n; i++) {
+    result += randChar();
+  }
+  return result;
 }
+
+module.exports = exports = randStr;
