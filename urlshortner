@@ -1,0 +1,4 @@
+1. Short URL Gen from long ones
+2. Stores the short url:long url mapping somewhere
+3. Handles incoming http request
+4. Redirects the requests to the long url, based on the shrot url.
