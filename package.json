@@ -1,0 +1,32 @@
+{
+  "name": "shorturl",
+  "version": "1.0.0",
+  "description": "Generates short urls from long ones and handles HTTP requests",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webmakersteve/shorturl.git"
+  },
+  "keywords": [
+    "shorturl",
+    "bitly"
+  ],
+  "author": "",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/webmakersteve/shorturl/issues"
+  },
+  "homepage": "https://github.com/webmakersteve/shorturl",
+  "dependencies": {
+    "express": "^4.8.5",
+    "hiredis": "^0.1.17",
+    "nconf": "^0.6.9",
+    "redis": "^0.12.1"
+  },
+  "devDependencies": {
+    "mocha": "^1.21.4"
+  }
+}
