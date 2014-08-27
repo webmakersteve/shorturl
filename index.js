@@ -68,29 +68,60 @@ app.post('/link', function(req,res,next) {
 function to66 (num) {
 
   // Base 66
-  var nums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+  var nums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"; //a is 0
   // Now that we have the nums we can just use powers to convert the base
   var remainder = num,
       base = nums.length,
       index,
       temp,
-      returnstr = "";
+      returnstr = "",
+      charAt = '';
 
-  do {
-    for (var i = 0; Math.pow(base,i) < remainder; i++) {
-      index = Math.pow(base,i);
-    }
+  for (var i = 0; Math.pow(base,i) < remainder; i++) {
 
-    temp = remainder / index;
-    remainder = remainder % index;
+  }
+  i--;
 
-    returnstr += nums[parseInt(temp)-1];
+  while ( i >= 0 ) {
+    index = Math.pow(base,i); //calculate the current base
 
-  } while (remainder > 0);
+    modulus = remainder % index;
+    // Modulus will become the new remainder
 
-  return returnstr.split("").reverse().join("");
+    temp = (remainder - modulus) / index;
+    console.log(temp + " at " + base + "^" + i);
+    returnstr += nums[temp];
+
+    remainder = modulus;
+
+    i--;
+  }
+  returnstr = returnstr.split("").reverse().join("");
+  return returnstr;
 
 }
+
+function from66 (string) {
+  // Base 66
+  var nums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
+  var characters = string.split("").reverse();
+
+  var base = nums.length,
+      i = 0,
+      total = 0;
+
+  // Iterate through each character
+  for (var x in characters) {
+    console.log( i + 1 )
+    total += nums.indexOf(characters[x]) * Math.pow(base,i);
+    i++;
+  }
+
+  return total;
+
+}
+
+console.log( to66(5108360676096) )
 
 function getNewIndex() {
   return when.promise(function(resolve,reject,notify) {
