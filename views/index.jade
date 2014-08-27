@@ -1,18 +1,12 @@
-doctype html
-html(lang="en")
-  head
-    title= pageTitle
-    script(type='text/javascript').
-      if (foo) {
-         bar(1 + 5)
-      }
-  body
-    h1 Add a link!
-    #container.col
-      p.
-        Fill in the form below to get your very own superlink
-      form(action='/link',method='post')
-        label
-          strong="Link to shorten:"
-        input(type="text",placeholder="Link",name="link")
-        input(type="submit",value="Make my link!")
+extends layout
+
+block content
+  h1 Add a link!
+  #container.col
+    p.
+      Fill in the form below to get your very own superlink
+    form(action='/link',method='post')
+      label
+        strong="Link to shorten:"
+      input(type="text",placeholder="Link",name="link")
+      input(type="submit",value="Make my link!")

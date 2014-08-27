@@ -1,62 +1,66 @@
 var express = require('express'),
     app = express(),
-    bodyparser = require('body-parser'),
-    expressLess = require('express-less'),
+    bodyParser = require('body-parser'),
     db = require('./db'),
     conf = require('./conf'),
     nconf = conf.nconf,
-    url_util = require('./url');
+    url_util = require('./url'),
+    path = require('path');
 
-app.use( bodyparser.urlencoded({ extended: true}) );
+var favicon = require('static-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+
+app.use(favicon());
+app.use(logger('dev'));
+app.use(bodyParser.json({ extended: true}));
+app.use(bodyParser.urlencoded({ extended: true}));
+app.use(cookieParser());
+
 app.use(express.static( __dirname + '/public'));
 
-app.use('/css', expressLess(__dirname + '/less'));
-
+app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
-db.connect().then(function() { // Pass app in so we can listen
-  app.get('/', function(req,res) {
-      res.render('index', { });
-  });
+/** routes **/
 
-  app.get("/:shorturl*", function(req,res,next) {
-      var shorturl = req.params.shorturl || false;
+app.use('/', require('./routes/index'));
+app.use('/:shorturl*', require('./routes/redirect'));
+app.use('/creat/link', require('./routes/link'));
 
-      if (shorturl) {
-        db.getLink(shorturl).then(function(url) {
-          if (url) {
-              return res.redirect(url)
-          }
+/// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
 
-          res.end();
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: err
         });
-
-      } else {
-        res.end();
-        // Link does not exist
-      }
-  });
-
-  app.post('/link', function(req,res,next) {
-    link = req.body.link || false;
-
-    if (!link) {
-      return res.end("Please supply a link");
-    }
-    db.getNewIndex().then(function(index) {
-      var url = url_util.to68(index);
-      db.saveLink(url, link);
-      res.render("link-added", {link: conf.url() + url});
-    }).catch(function(e) {
-      console.log(e);
-      res.render("error", {error: e});
     });
+}
 
-  });
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {}
+    });
+});
+
+db.connect().then(function() { // Pass app in so we can listen
 
   app.listen(conf.port());
   console.log("Listening on port " + conf.port())
-
 
 })
