@@ -1,10 +1,11 @@
-var redis = require("redis"),
-    express = require('express'),
+var express = require('express'),
     app = express(),
     bodyparser = require('body-parser'),
     expressLess = require('express-less'),
-    nconf = require('nconf'),
-    when = require('when');
+    db = require('./db'),
+    conf = require('./conf'),
+    nconf = conf.nconf,
+    url_util = require('./url');
 
 app.use( bodyparser.urlencoded({ extended: true}) );
 app.use(express.static( __dirname + '/public'));
@@ -14,156 +15,48 @@ app.use('/css', expressLess(__dirname + '/less'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
-// Setup nconf to use (in-order):
-//   1. Command-line arguments
-//   2. Environment variables
-//   3. A file located at 'path/to/config.json'
-//
-nconf.argv()
-     .env()
-     .file({ file: 'config.json' });
-
-var rootURL = "http://ferntastic-shortening.herokuapp.com";
-
-var REDIS_URL = nconf.get('REDISTOGO_URL') || false;
-
-if (REDIS_URL) {
-  var redisURL = require("url").parse(REDIS_URL);
-
-  var client = redis.createClient(redisURL.port, redisURL.hostname);
-  client.auth(redisURL.auth.split(":")[1], function(err) {
-    // After password is sent
+db.connect().then(function() { // Pass app in so we can listen
+  app.get('/', function(req,res) {
+      res.render('index', { });
   });
-} else {
-  var client = redis.createClient();
-}
 
-client.on("error", function (err) {
-    console.log("Error " + err);
-});
+  app.get("/:shorturl*", function(req,res,next) {
+      var shorturl = req.params.shorturl || false;
 
-client.on("connect", function() {
-  var env = nconf.get('NODE_ENV') || 'dev';
-  var port = nconf.get('PORT') || false;
+      if (shorturl) {
+        db.getLink(shorturl).then(function(url) {
+          if (url) {
+              return res.redirect(url)
+          }
 
-  if (!port) {
-    // Port overrides all
-    if (env == 'production')
-      port = 80;
-    else port = 3000;
-    rootURL += ":" + port;
+          res.end();
+        });
 
-  }
-
-  rootURL += '/';
-
-  app.listen(port);
-  console.log("Listening on port " + port)
-});
-
-app.get('/', function(req,res,next) {
-    res.render('index', { });
-});
-
-app.get("/:shorturl*", function(req,res,next) {
-    var shorturl = req.params.shorturl || false;
-
-    if (shorturl) {
-      client.get("link_" + shorturl, function(err,url) {
-      	if (err) return;
-
-      	if (url) {
-      	    return res.redirect(url)
-      	}
-
+      } else {
         res.end();
-      });
-    } else {
-      res.end();
-      // Link does not exist
-    }
-});
-
-app.post('/link', function(req,res,next) {
-  link = req.body.link || false;
-
-  if (!link) {
-    return res.end("Please supply a link");
-  }
-  getNewIndex().then(function(index) {
-    var url = to66(index);
-    client.set( "link_" + url, link );
-    res.render("link-added", {link: rootURL + url});
-  }).catch(function(e) {
-    res.render("error", {error: e});
+        // Link does not exist
+      }
   });
 
-});
+  app.post('/link', function(req,res,next) {
+    link = req.body.link || false;
 
-
-function to66 (num) {
-
-  // Base 66
-  var nums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"; //a is 0
-  // Now that we have the nums we can just use powers to convert the base
-  var remainder = num,
-      base = nums.length,
-      index,
-      temp,
-      returnstr = "",
-      charAt = '';
-
-  if (num < base) {
-    return nums[num];
-  }
-
-  for (var i = 0; Math.pow(base,i) < remainder; i++) {
-
-  }
-  i--;
-
-  while ( i >= 0 ) {
-    index = Math.pow(base,i); //calculate the current base
-
-    modulus = remainder % index;
-    // Modulus will become the new remainder
-
-    temp = (remainder - modulus) / index;
-    returnstr += nums[temp];
-
-    remainder = modulus;
-
-    i--;
-  }
-  returnstr = returnstr.split("").reverse().join("");
-  return returnstr;
-
-}
-
-function from66 (string) {
-  // Base 66
-  var nums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
-  var characters = string.split("").reverse();
-
-  var base = nums.length,
-      i = 0,
-      total = 0;
-
-  // Iterate through each character
-  for (var x in characters) {
-    total += nums.indexOf(characters[x]) * Math.pow(base,i);
-    i++;
-  }
-
-  return total;
-
-}
-
-function getNewIndex() {
-  return when.promise(function(resolve,reject,notify) {
-    client.send_command("eval", ["return #redis.call('keys', 'link_*')", "0"], function(err,result) {
-      if (err) return reject(err);
-      else resolve(result);
+    if (!link) {
+      return res.end("Please supply a link");
+    }
+    db.getNewIndex().then(function(index) {
+      var url = url_util.to68(index);
+      db.saveLink(url, link);
+      res.render("link-added", {link: conf.url() + url});
+    }).catch(function(e) {
+      console.log(e);
+      res.render("error", {error: e});
     });
-  })
-}
+
+  });
+
+  app.listen(conf.port());
+  console.log("Listening on port " + conf.port())
+
+
+})
