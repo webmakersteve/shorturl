@@ -25,11 +25,11 @@ nconf.argv()
 
 var rootURL = "http://ferntastic-shortening.herokuapp.com";
 
+console.log('WHERE IS THE URL');
 if (nconf.get('REDISTOGO_URL')) {
-  var parseRedisUrl = require('parse-redis-url')(nconf.get('REDISTOGO_URL'));  
+  var parseRedisUrl = require('parse-redis-url')(nconf.get('REDISTOGO_URL'));
+  console.log(parseRedisUrl);
   var client = redis.createClient(parseRedisUrl);
-
-
 } else {
   var client = redis.createClient();
 }
@@ -44,7 +44,7 @@ client.on("connect", function() {
 
   if (!port) {
     // Port overrides all
-    if (env == 'prod')
+    if (env == 'production')
       port = 80;
     else port = 3000;
   }

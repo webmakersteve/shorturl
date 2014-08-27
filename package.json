@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Generates short urls from long ones and handles HTTP requests",
   "main": "index.js",
+  "engines": {
+    "node": "0.10.x"
+  },
   "scripts": {
     "test": "mocha test.js",
     "start": "node index.js"
