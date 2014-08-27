@@ -1,9 +1,9 @@
 var redis = require("redis"),
-    client = redis.createClient(),
     express = require('express'),
     app = express(),
     bodyparser = require('body-parser'),
     expressLess = require('express-less'),
+    nconf = require('nconf'),
     when = require('when');
 
 app.use( bodyparser.urlencoded({ extended: true}) );
@@ -14,15 +14,47 @@ app.use('/css', expressLess(__dirname + '/less'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
-var rootURL = "http://localhost:3000/";
+// Setup nconf to use (in-order):
+//   1. Command-line arguments
+//   2. Environment variables
+//   3. A file located at 'path/to/config.json'
+//
+nconf.argv()
+     .env()
+     .file({ file: 'config.json' });
 
+var rootURL = "http://ferntastic-shortening.herokuapp.com";
+
+if (nconf.get('REDISTOGO_URL')) {
+  var parseRedisUrl = require('parse-redis-url')(nconf.get('REDISTOGO_URL'));  
+  var client = redis.createClient(parseRedisUrl);
+
+
+} else {
+  var client = redis.createClient();
+}
 
 client.on("error", function (err) {
     console.log("Error " + err);
 });
 
 client.on("connect", function() {
-    app.listen(3000);
+  var env = nconf.get('NODE_ENV') || 'dev';
+  var port = nconf.get('port') || false;
+
+  if (!port) {
+    // Port overrides all
+    if (env == 'prod')
+      port = 80;
+    else port = 3000;
+  }
+  if (port != 80)
+    rootURL += ":" + port;
+
+  rootURL += '/';
+
+  app.listen(port);
+  console.log("Listening on port " + port)
 });
 
 app.get('/', function(req,res,next) {
@@ -89,7 +121,6 @@ function to66 (num) {
     // Modulus will become the new remainder
 
     temp = (remainder - modulus) / index;
-    console.log(temp + " at " + base + "^" + i);
     returnstr += nums[temp];
 
     remainder = modulus;
@@ -120,8 +151,6 @@ function from66 (string) {
   return total;
 
 }
-
-console.log( to66(5108360676096) )
 
 function getNewIndex() {
   return when.promise(function(resolve,reject,notify) {
