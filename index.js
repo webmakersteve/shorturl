@@ -32,7 +32,7 @@ if (REDIS_URL) {
 
   var client = redis.createClient(redisURL.port, redisURL.hostname);
   client.auth(redisURL.auth.split(":")[1], function(err) {
-    console.log(err);
+    // After password is sent
   });
 } else {
   var client = redis.createClient();
@@ -51,9 +51,9 @@ client.on("connect", function() {
     if (env == 'production')
       port = 80;
     else port = 3000;
-  }
-  if (port != 80)
     rootURL += ":" + port;
+
+  }
 
   rootURL += '/';
 
@@ -113,6 +113,10 @@ function to66 (num) {
       returnstr = "",
       charAt = '';
 
+  if (num < base) {
+    return nums[num];
+  }
+
   for (var i = 0; Math.pow(base,i) < remainder; i++) {
 
   }
@@ -147,7 +151,6 @@ function from66 (string) {
 
   // Iterate through each character
   for (var x in characters) {
-    console.log( i + 1 )
     total += nums.indexOf(characters[x]) * Math.pow(base,i);
     i++;
   }
