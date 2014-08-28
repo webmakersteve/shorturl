@@ -19,7 +19,7 @@ router.post('/create', function(req,res,next) {
   db.getNewIndex().then(function(index) {
     var url = url_util.to68(index);
     db.saveLink(url, link);
-    res.render("link-added", {link: conf.url() + url});
+    res.render("link-added", {link: conf.url() + url, url: url});
   }).catch(function(e) {
     next(e);
   });
