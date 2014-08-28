@@ -7,43 +7,32 @@ var nconf = require('nconf');
 //
 nconf.argv()
      .env()
-     .file({ file: 'config.json' });
+     .file({file: 'config/config.json'});
 
-var baseURL = "http://ferntastic-shortening.herokuapp.com";
-nconf.set('url', rootURL);
+var NODE_ENV = function() {
+  var env = nconf.get('NODE_ENV') || 'dev';
+  return env;
+}
 
-var rootURL = "";
+nconf.file({ file: 'config/' + NODE_ENV()+'.json' });
 
 module.exports.port = function() {
-  var env = nconf.get('NODE_ENV') || 'dev';
-  var port = nconf.get('PORT') || false;
-
-  var firstRootURL = !rootURL || false;
-
-  if (firstRootURL)
-    rootURL += baseURL;
-
+  var port = nconf.get('PORT') || 3000;
   if (!port) {
     // Port overrides all
-    if (env == 'production')
+    if (NODE_ENV() == 'production')
       port = 80;
     else port = 3000;
 
-    if (firstRootURL)
-      rootURL += ":" + port;
-
-  }
-
-  if (firstRootURL)  {
-    rootURL += '/';
-    nconf.set('url', rootURL);
   }
 
   return port;
 }
 
 module.exports.url = function() {
-  return nconf.get('url');
+  return nconf.get('baseURL') || "http://91f.co/";
 }
 
 module.exports.nconf = nconf;
+
+module.exports.env = NODE_ENV;
