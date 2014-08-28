@@ -16,8 +16,8 @@ router.get('/:shorturl*', function(req, res, next) {
       if (url) {
           return res.redirect(url)
       }
-
-      res.end();
+      next();
+        
     }).catch(function(err) {
       next(err);
     });
