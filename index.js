@@ -27,6 +27,7 @@ app.set('view engine', 'jade');
 app.use('/', require('./routes/index'));
 app.use('/link', require('./routes/link'));
 
+app.locals.title = "URL Shortener"
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {

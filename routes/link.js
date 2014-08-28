@@ -7,7 +7,6 @@ var conf = require('../conf');
 
 /* GET home page. */
 router.post('/create', function(req,res,next) {
-  console.log('hey');
   link = req.body.link || false;
 
   if (!link) {
@@ -16,10 +15,23 @@ router.post('/create', function(req,res,next) {
         error: {}
     });
   }
+
+  var urlParsed = require("url").parse(link);
+
+  if (!urlParsed.protocol || !urlParsed.hostname || !urlParsed.path) {
+    return res.render('error', {
+        message: "Invalid Link",
+        error: {}
+    });
+  }
+
   db.getNewIndex().then(function(index) {
     var url = url_util.to68(index);
     db.saveLink(url, link);
-    res.render("link-added", {link: conf.url() + url, url: url});
+    res.render("link-added", {
+      link: conf.url() + url,
+      url: url
+    });
   }).catch(function(e) {
     next(e);
   });

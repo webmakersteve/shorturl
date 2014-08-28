@@ -5,7 +5,7 @@ var db = require('../db');
 
 /* GET home page. */
 router.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
+  res.render('index', {});
 });
 
 router.get('/:shorturl*', function(req, res, next) {
@@ -17,7 +17,7 @@ router.get('/:shorturl*', function(req, res, next) {
           return res.redirect(url)
       }
       next();
-        
+
     }).catch(function(err) {
       next(err);
     });
