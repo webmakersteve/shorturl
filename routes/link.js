@@ -11,15 +11,17 @@ router.post('/create', function(req,res,next) {
   link = req.body.link || false;
 
   if (!link) {
-    return res.end("Please supply a link");
+    return res.render('error', {
+        message: "Please enter a link.",
+        error: {}
+    });
   }
   db.getNewIndex().then(function(index) {
     var url = url_util.to68(index);
     db.saveLink(url, link);
     res.render("link-added", {link: conf.url() + url});
   }).catch(function(e) {
-    console.log(e);
-    res.render("error", {error: e});
+    next(e);
   });
 
 });

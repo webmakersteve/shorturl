@@ -26,7 +26,6 @@ app.set('view engine', 'jade');
 
 app.use('/', require('./routes/index'));
 app.use('/link', require('./routes/link'));
-app.use('/:shorturl*', require('./routes/redirect'));
 
 
 /// catch 404 and forward to error handler
