@@ -4,7 +4,7 @@ var router = express.Router();
 var db = require('../db');
 
 /* GET home page. */
-router.get('/', function(req, res) {
+router.get('/', function(req, res, next) {
   var shorturl = req.params.shorturl || false;
 
   if (shorturl) {
@@ -14,10 +14,11 @@ router.get('/', function(req, res) {
       }
 
       res.end();
+    }).catch(function(err) {
+      next(err);
     });
-
   } else {
-    res.end();
+    next();
     // Link does not exist
   }
 });

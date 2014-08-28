@@ -5,8 +5,8 @@ block content
   #container.col
     p.
       Fill in the form below to get your very own superlink
-    form(action='/link',method='post')
+    form(action='/link/create',method='post')
       label
-        strong="Link to shorten:"
+        strong Link to shorten:
       input(type="text",placeholder="Link",name="link")
-      input(type="submit",value="Make my link!")
+      button(type="submit") Make my link!

@@ -4,7 +4,6 @@ var express = require('express'),
     db = require('./db'),
     conf = require('./conf'),
     nconf = conf.nconf,
-    url_util = require('./url'),
     path = require('path');
 
 var favicon = require('static-favicon');
@@ -26,8 +25,9 @@ app.set('view engine', 'jade');
 /** routes **/
 
 app.use('/', require('./routes/index'));
+app.use('/link', require('./routes/link'));
 app.use('/:shorturl*', require('./routes/redirect'));
-app.use('/creat/link', require('./routes/link'));
+
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
